@@ -1,0 +1,277 @@
+---
+title: "Gymnast Gold Medal Prediction"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo    = T, 
+                      include = T,
+                      warning = F,
+                      message = F,
+                      comment = NA,
+                      fig.height = 5, 
+                      fig.width  = 5, 
+                      fig.align  = 'center')
+  library(dplyr)
+  library(lubridate)
+  library(tidyverse)
+  library(tools)
+```
+
+## Overview
+
+This project aims to predict the possibility of a gymnast winning a gold medal in different apparatus during finals. We use logistic regression for this prediction.
+
+## Data Exploration
+```{r}
+# separated qual and final rounds, removed NA score, separated by apparatus
+# I believe UE is the same apparatus as UB (uneven bars) UE is not listed in the README 
+
+library('dplyr')
+library('lubridate')
+library("tidyverse")
+
+x <- read.csv("data/data_2017_2021.csv", as.is = TRUE)
+formats = c("%d/ %b/ %Y", "%d/ %B/ %Y", "%a/ %d/ %b/ %Y")
+x$Date <- parse_date_time(x$Date, formats)
+x <- x %>% 
+  distinct() %>% 
+  drop_na(Score) 
+
+female_17_21 <- filter(x, Gender == "w")
+male_17_21 <- filter(x, Gender == "m")
+
+
+#rm(list = ls())
+apparatus_m <- unique(male_17_21$Apparatus)
+apparatus_f <- unique(female_17_21$Apparatus)
+
+# Separating all USA 2017-2021 data by apparatus and round
+# Currently there is no male data
+
+
+# BB women only
+f17_21_BB_qual <- filter(female_17_21, Apparatus == "BB" & Round == "qual")
+f17_21_BB_final <- filter(female_17_21, Apparatus == "BB" & Round == "final")
+
+
+# FX women only
+f17_21_FX_qual <- filter(female_17_21, Apparatus == "FX" & Round == "qual")
+f17_21_FX_final <- filter(female_17_21, Apparatus == "FX" & Round == "final")
+
+
+# UE women only
+f17_21_UE_qual <- filter(female_17_21, Apparatus == "UE" & Round == "qual")
+f17_21_UE_final <- filter(female_17_21, Apparatus == "UE" & Round == "final")
+
+
+# VT both men and women
+f17_21_VT_qual <- filter(female_17_21, Apparatus == "VT" & Round == "qual")
+f17_21_VT_final <- filter(female_17_21, Apparatus == "VT" & Round == "final")
+m17_21_VT_qual <- filter(male_17_21, Apparatus == "VT" & Round == "qual")
+m17_21_VT_final <- filter(male_17_21, Apparatus == "VT" & Round == "final")
+
+# VT1 both men and women
+f17_21_VT1_qual <- filter(female_17_21, Apparatus == "VT1" & Round == "qual")
+f17_21_VT1_final <- filter(female_17_21, Apparatus == "VT1" & Round == "final")
+m17_21_VT1_qual <- filter(male_17_21, Apparatus == "VT1" & Round == "qual")
+m17_21_VT1_final <- filter(male_17_21, Apparatus == "VT1" & Round == "final")
+
+# VT2 both men and women
+f17_21_VT2_qual <- filter(female_17_21, Apparatus == "VT2" & Round == "qual")
+f17_21_VT2_final <- filter(female_17_21, Apparatus == "VT2" & Round == "final")
+m17_21_VT2_qual <- filter(male_17_21, Apparatus == "VT2" & Round == "qual")
+m17_21_VT2_final <- filter(male_17_21, Apparatus == "VT2" & Round == "final")
+
+# SR men only
+m17_21_SR_qual <- filter(male_17_21, Apparatus == "SR" & Round == "qual")
+m17_21_SR_final <- filter(male_17_21, Apparatus == "SR" & Round == "final")
+
+# PH men only
+m17_21_PH_qual <- filter(male_17_21, Apparatus == "PH" & Round == "qual")
+m17_21_PH_final <- filter(male_17_21, Apparatus == "PH" & Round == "final")
+
+# PB men only
+m17_21_PB_qual <- filter(male_17_21, Apparatus == "PB" & Round == "qual")
+m17_21_PB_final <- filter(male_17_21, Apparatus == "PB" & Round == "final")
+
+# HB men only (equiv to FX for women)
+m17_21_HB_qual <- filter(male_17_21, Apparatus == "HB" & Round == "qual")
+m17_21_HB_final <- filter(male_17_21, Apparatus == "HB" & Round == "final")
+
+
+y <- read.csv("data/data_2022_2023.csv", as.is = TRUE)
+y <- y %>% 
+  distinct() %>% 
+  drop_na(Score) 
+
+female_22_23 <- filter(y, Gender == "w")
+male_22_23 <- filter(y, Gender == "m")
+
+#rm(list = ls())
+apparatus_m2 <- unique(male_22_23$Apparatus)
+apparatus_f2 <- unique(female_22_23$Apparatus)
+
+
+
+# Separating all USA 2022-2023 data by apparatus and round
+
+# BB women only
+f22_23_BB_qual <- filter(female_22_23, Apparatus == "BB" & Round == "qual")
+f22_23_BB_final <- filter(female_22_23, Apparatus == "BB" & Round == "final")
+
+
+# FX women only
+f22_23_FX_qual <- filter(female_22_23, Apparatus == "FX" & Round == "qual")
+f22_23_FX_final <- filter(female_22_23, Apparatus == "FX" & Round == "final")
+
+
+# UE women only
+f22_23_UE_qual <- filter(female_22_23, Apparatus == "UE" & Round == "qual")
+f22_23_UE_final <- filter(female_22_23, Apparatus == "UE" & Round == "final")
+
+
+# VT both men and women
+f22_23_VT_qual <- filter(female_22_23, Apparatus == "VT" & Round == "qual")
+f22_23_VT_final <- filter(female_22_23, Apparatus == "VT" & Round == "final")
+m22_23_VT_qual <- filter(male_22_23, Apparatus == "VT" & Round == "qual")
+m22_23_VT_final <- filter(male_22_23, Apparatus == "VT" & Round == "final")
+
+# VT1 both men and women
+f22_23_VT1_qual <- filter(female_22_23, Apparatus == "VT1" & Round == "qual")
+f22_23_VT1_final <- filter(female_22_23, Apparatus == "VT1" & Round == "final")
+m22_23_VT1_qual <- filter(male_22_23, Apparatus == "VT1" & Round == "qual")
+m22_23_VT1_final <- filter(male_22_23, Apparatus == "VT1" & Round == "final")
+
+# VT2 both men and women
+f22_23_VT2_qual <- filter(female_22_23, Apparatus == "VT2" & Round == "qual")
+f22_23_VT2_final <- filter(female_22_23, Apparatus == "VT2" & Round == "final")
+m22_23_VT2_qual <- filter(male_22_23, Apparatus == "VT2" & Round == "qual")
+m22_23_VT2_final <- filter(male_22_23, Apparatus == "VT2" & Round == "final")
+
+# SR men only
+m22_23_SR_qual <- filter(male_22_23, Apparatus == "SR" & Round == "qual")
+m22_23_SR_final <- filter(male_22_23, Apparatus == "SR" & Round == "final")
+
+# PH men only
+m22_23_PH_qual <- filter(male_22_23, Apparatus == "PH" & Round == "qual")
+m22_23_PH_final <- filter(male_22_23, Apparatus == "PH" & Round == "final")
+
+# PB men only
+m22_23_PB_qual <- filter(male_22_23, Apparatus == "PB" & Round == "qual")
+m22_23_PB_final <- filter(male_22_23, Apparatus == "PB" & Round == "final")
+
+# HB men only (equiv to FX for women)
+m22_23_HB_qual <- filter(male_22_23, Apparatus == "HB" & Round == "qual")
+m22_23_HB_final <- filter(male_22_23, Apparatus == "HB" & Round == "final")
+
+```
+
+
+Find the trajectories of D score and E score:
+```{r}
+
+## for female_17_21
+
+
+ggplot(female_17_21, aes(x=LastName)) + 
+  geom_point(aes(y = D_Score, color = "D_Score")) + 
+  geom_point(aes(y = E_Score, color = "E_Score")) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  xlab("Olympian last name") + ylab("Score") + 
+  scale_color_manual(name = 'Score labels', breaks = c("D_Score", "E_Score"),
+                     values = c("D_Score" = "darkred", "E_Score" = "steelblue"))
+
+```
+The graph for the comparison of the D score and E score amongst the gymnasts. We can see the general trends; Biles shows strong lead; Chiles, MC and Carey have greater range 
+
+
+```{r}
+
+
+## for female_22_23
+
+ggplot(female_22_23, aes(x=LastName)) + 
+  geom_point(aes(y = D_Score, color = "D_Score")) + 
+  geom_point(aes(y = E_Score, color = "E_Score")) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  xlab("Olympian last name") + ylab("Score") + 
+  scale_color_manual(name = 'Score labels', breaks = c("D_Score", "E_Score"),
+                     values = c("D_Score" = "darkred", "E_Score" = "steelblue"))
+
+```
+Interestingly, we note that the scores are more centralized and have less variance; also interesting to note that Wont has a higher variance compared others; Roberson has a more clusterd datapoints 
+
+
+
+```{r}
+
+## for male_22_23
+ggplot(male_22_23, aes(x=LastName)) + 
+  geom_point(aes(y = D_Score, color = "D_Score")) + 
+  geom_point(aes(y = E_Score, color = "E_Score")) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  xlab("Olympian last name") + ylab("Score") + 
+  scale_color_manual(name = 'Score labels', breaks = c("D_Score", "E_Score"),
+                     values = c("D_Score" = "darkred", "E_Score" = "steelblue"))
+
+```
+Note that the male_17_21 is missing elements; we briefly talked about this with Brian beforehand as well. Off the bat, men have competed in more competitions than the women, so we have more data for the men's side ; interesting to see how some men have 0 E_score; Malone has good consistency for D score and so does Richard; Whittenburg has less variance for E score but higher variance for D score
+
+
+
+```{r}
+
+## Find the distribution of final scores:
+ggplot(female_17_21, aes(x=LastName)) + 
+  geom_point(aes(y = Score), color = "darkred") 
+# Carey's scoes are the most varied; Biles is the most consitently high
+
+ggplot(female_22_23, aes(x=LastName)) + 
+  geom_point(aes(y = Score), color = "darkred") 
+# Significant improvement in scores; not sure about Matthews, Miller, and 
+# Sullivan with the scores of 0
+# Miller's scores are very varies; Carey and Jones are consistently well 
+
+ggplot(male_22_23, aes(x=LastName)) + 
+  geom_point(aes(y = Score), color = "darkred") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+# Male scores seem more varied; there seems to be higher variance for Hong and 
+# Phillips ; some players like 4Nedoroscik, Sun, and Skirkey have little 
+# experience and data on them- maybe we can use this to determine who to 
+# consider for the team
+
+```
+
+### Variables
+
+The predictor variables used include:
+- **Mean Score**: The average score from past competitions.
+- **Consistency**: Variance of scores to indicate how consistent a gymnast is.
+- **Mean Difficulty**: Average difficulty score chosen by the gymnast.
+- **Failure Frequency**: Frequency of penalties in past performances.
+
+Note that all the predictors are based on gymnasts and the apparatus
+
+### Model
+
+We used a logistic regression model for our predictions. 
+The summary of the fitted model is here:
+```{r}
+setwd("/Users/guanrui/Desktop/S&DS625/Gymnastics")
+
+source("clean_data.r")
+source("craft_variables.r")
+source("fit_model.r")
+
+cleaned_data <- clean_championship_data()
+crafted_variables <- craft_variables(cleaned_data)
+fit_full_logistic_model(crafted_variables)
+```
+
+### Next Steps
+
+1. Incorporate more features, such as coach experience, age of the gymnast, and more.
+2. Use other classification models and compare their performance.
+3. Build more metrics to evaluate the model.
+4. Get more insights according to data visualization
