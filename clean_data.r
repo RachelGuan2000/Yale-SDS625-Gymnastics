@@ -32,7 +32,7 @@ clean_championship_data <- function() {
     mutate(Name = paste(FirstName, toupper(LastName))) %>%
     mutate(Apparatus = ifelse(Apparatus == "VT_1", "VT1", Apparatus)) %>%
     mutate(Apparatus = ifelse(Apparatus == "VT_2", "VT2", Apparatus)) %>%
-    select(Name, Gender, Round, Apparatus, D_Score, E_Score, Penalty, Score, Rank, Country)
+    select(Name, Gender, Round, Apparatus, D_Score, E_Score, Penalty, Score, Rank, Country, Competition)
 
   return(y)
 }
