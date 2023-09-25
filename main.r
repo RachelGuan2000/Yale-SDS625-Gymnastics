@@ -155,6 +155,13 @@ ggplot(all_women_simulation, aes(x= reorder(Name, -prob), y= prob, fill=country)
   ylab("Probability of winning finals")
 
 
+## Comments
+# It's very clear from the graph that the US has a higher variance in many 
+# of the players but they overall score higher than the other countries. 
+# In order from strongest to weakest of the top countries, we have: USA, ENG, 
+# and CAN. I'm wondering if Zoe Miller may be an outlier since having over 60% 
+# chance of winning and being higher than everyone else is very unlikely. 
+
 ### Men 
 
 CHN_top5_men <- top5("CHN", "m")
@@ -198,6 +205,16 @@ ggplot(all_men_simulation, aes(x= reorder(Name, -prob), y= prob, fill=country)) 
   geom_bar(stat = "identity") + xlab("Male contestants") + 
   ylab("Probability of winning finals")
 
+
+## Comments
+# Interestingly enough, in this graph, the US does not trump all countries- 
+# although we are working with more countries and players in this simulation 
+# set. We matched the top 5 players from the other countries alongside a  
+# potential team of US male players. In this case, China trumps above all with 
+# Jingyuan Zou having a probability of above 75% in winning a medal. Unlike the
+# women's team, China's team is less variable and has a smoother descent in the 
+# bars. The US is also one of the weakest teams in comparison with the top
+# countries here. 
 
 
 
