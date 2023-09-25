@@ -91,4 +91,116 @@ candidates_m <- candidate_selection(variables, aa_variables, "m", 2, vaults)
 candidates_m
 
 
+########## GGPLOT
+
+## Top Counties Competitors:
+
+# Men’s qual: china, Japan, Great Britain
+# Women: US, Great Britain, Canada
+
+#### Comparing the probabilities for women and men
+
+### Women 
+
+## US women
+USA_candidates_w_plot <- candidates_w %>% group_by(Name) %>% 
+  summarise(prob = mean(prob)) 
+
+ggplot(USA_candidates_w_plot, aes(x = reorder(Name, -prob), y = prob)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  geom_bar(stat = "identity" , color='skyblue',fill='steelblue') + 
+  xlab("Female contestants") + ylab("probability of winning finals")
+
+## US men 
+USA_candidates_m_plot <- candidates_m %>% group_by(Name) %>% 
+  summarise(prob = mean(prob)) 
+
+ggplot(USA_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  geom_bar(stat = "identity" , color='skyblue',fill='steelblue') + 
+  xlab("Female contestants") + ylab("probability of winning finals")
+
+
+
+top_countries_w
+
+ENG_top5_women <- top5("ENG", "w")
+CAN_top5_women <- top5("CAN", "w")
+
+ENG_candidates_w_plot <- ENG_top5_women %>% group_by(Name) %>% 
+  summarise(prob = mean(prob)) 
+ggplot(ENG_candidates_w_plot, aes(x = reorder(Name, -prob), y = prob)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  geom_bar(stat = "identity" , color='dodgerblue4',fill='dodgerblue3') + 
+  xlab("Female contestants") + ylab("probability of winning finals")
+
+CAN_candidates_w_plot <-  CAN_top5_women %>% group_by(Name) %>% 
+  summarise(prob = mean(prob)) 
+ggplot(CAN_candidates_w_plot, aes(x = reorder(Name, -prob), y = prob)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  geom_bar(stat = "identity" , color='burlywood',fill='red4') + 
+  xlab("Female contestants") + ylab("probability of winning finals")
+
+# Combine all together
+USA_candidates_w_plot$country <- "USA"
+ENG_candidates_w_plot$country <- "ENG"
+CAN_candidates_w_plot$country <- "CAN"
+
+all_women_simulation <- rbind(USA_candidates_w_plot, ENG_candidates_w_plot, CAN_candidates_w_plot)
+
+
+ggplot(all_women_simulation, aes(x= reorder(Name, -prob), y= prob, fill=country)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  geom_bar(stat = "identity") + xlab("Female contestants") + 
+  ylab("Probability of winning finals")
+
+
+### Men 
+
+CHN_top5_men <- top5("CHN", "m")
+JPN_top5_men <- top5("JPN", "m")
+ENG_top5_men <- top5("ENG", "m")
+
+# Plotting the probabilities of top players in competitor country
+ENG_candidates_m_plot <- ENG_top5_men %>% group_by(Name) %>% 
+  summarise(prob = mean(prob)) 
+ggplot(ENG_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  geom_bar(stat = "identity" , color='dodgerblue4',fill='dodgerblue3') + 
+  xlab("Male contestants") + ylab("probability of winning finals")
+
+JPN_candidates_m_plot <- JPN_top5_men %>% group_by(Name) %>% 
+  summarise(prob = mean(prob)) 
+ggplot(JPN_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  geom_bar(stat = "identity" , color='darkred',fill='darkred') + 
+  xlab("Male contestants") + ylab("probability of winning finals")
+
+CHN_candidates_m_plot <- CHN_top5_men %>% group_by(Name) %>% 
+  summarise(prob = mean(prob)) 
+ggplot(CHN_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  geom_bar(stat = "identity" , color='red2',fill='red2') + 
+  xlab("Male contestants") + ylab("probability of winning finals")
+
+# Combine all together
+USA_candidates_m_plot$country <- "USA"
+ENG_candidates_m_plot$country <- "ENG"
+JPN_candidates_m_plot$country <- "JPN"
+CHN_candidates_m_plot$country <- "CHN"
+
+all_men_simulation <- rbind(USA_candidates_m_plot, ENG_candidates_m_plot, 
+                            JPN_candidates_m_plot, CHN_candidates_m_plot)
+
+
+ggplot(all_men_simulation, aes(x= reorder(Name, -prob), y= prob, fill=country)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  geom_bar(stat = "identity") + xlab("Male contestants") + 
+  ylab("Probability of winning finals")
+
+
+
+
+
+
 
