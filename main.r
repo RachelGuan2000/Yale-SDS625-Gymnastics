@@ -147,3 +147,128 @@ candidates_w
 
 candidates_m <- candidate_selection(variables, aa_variables, "m", 2, vaults)
 candidates_m
+
+########## GGPLOT
+
+## Top Counties Competitors:
+
+# Men’s qual: china, Japan, Great Britain
+# Women: US, Great Britain, Canada
+
+#### Comparing the probabilities for women and men
+
+### Women
+
+## US women
+USA_candidates_w_plot <- candidates_w %>% group_by(Name) %>%
+  summarise(prob = mean(prob))
+
+ggplot(USA_candidates_w_plot, aes(x = reorder(Name, -prob), y = prob)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='skyblue',fill='steelblue') +
+  xlab("Female contestants") + ylab("probability of winning finals")
+
+## US men
+USA_candidates_m_plot <- candidates_m %>% group_by(Name) %>%
+  summarise(prob = mean(prob))
+
+ggplot(USA_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='skyblue',fill='steelblue') +
+  xlab("Female contestants") + ylab("probability of winning finals")
+
+
+
+top_countries_w
+
+ENG_top5_women <- top5("ENG", "w")
+CAN_top5_women <- top5("CAN", "w")
+
+ENG_candidates_w_plot <- ENG_top5_women %>% group_by(Name) %>%
+  summarise(prob = mean(prob))
+ggplot(ENG_candidates_w_plot, aes(x = reorder(Name, -prob), y = prob)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='dodgerblue4',fill='dodgerblue3') +
+  xlab("Female contestants") + ylab("probability of winning finals")
+
+CAN_candidates_w_plot <-  CAN_top5_women %>% group_by(Name) %>%
+  summarise(prob = mean(prob))
+ggplot(CAN_candidates_w_plot, aes(x = reorder(Name, -prob), y = prob)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='burlywood',fill='red4') +
+  xlab("Female contestants") + ylab("probability of winning finals")
+
+# Combine all together
+USA_candidates_w_plot$country <- "USA"
+ENG_candidates_w_plot$country <- "ENG"
+CAN_candidates_w_plot$country <- "CAN"
+
+all_women_simulation <- rbind(USA_candidates_w_plot, ENG_candidates_w_plot, CAN_candidates_w_plot)
+
+
+ggplot(all_women_simulation, aes(x= reorder(Name, -prob), y= prob, fill=country)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity") + xlab("Female contestants") +
+  ylab("Probability of winning finals")
+
+
+## Comments
+# It's very clear from the graph that the US has a higher variance in many
+# of the players but they overall score higher than the other countries.
+# In order from strongest to weakest of the top countries, we have: USA, ENG,
+# and CAN. I'm wondering if Zoe Miller may be an outlier since having over 60%
+# chance of winning and being higher than everyone else is very unlikely.
+
+### Men
+
+CHN_top5_men <- top5("CHN", "m")
+JPN_top5_men <- top5("JPN", "m")
+ENG_top5_men <- top5("ENG", "m")
+
+# Plotting the probabilities of top players in competitor country
+ENG_candidates_m_plot <- ENG_top5_men %>% group_by(Name) %>%
+  summarise(prob = mean(prob))
+ggplot(ENG_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='dodgerblue4',fill='dodgerblue3') +
+  xlab("Male contestants") + ylab("probability of winning finals")
+
+JPN_candidates_m_plot <- JPN_top5_men %>% group_by(Name) %>%
+  summarise(prob = mean(prob))
+ggplot(JPN_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='darkred',fill='darkred') +
+  xlab("Male contestants") + ylab("probability of winning finals")
+
+CHN_candidates_m_plot <- CHN_top5_men %>% group_by(Name) %>%
+  summarise(prob = mean(prob))
+ggplot(CHN_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='red2',fill='red2') +
+  xlab("Male contestants") + ylab("probability of winning finals")
+
+# Combine all together
+USA_candidates_m_plot$country <- "USA"
+ENG_candidates_m_plot$country <- "ENG"
+JPN_candidates_m_plot$country <- "JPN"
+CHN_candidates_m_plot$country <- "CHN"
+
+all_men_simulation <- rbind(USA_candidates_m_plot, ENG_candidates_m_plot,
+                            JPN_candidates_m_plot, CHN_candidates_m_plot)
+
+
+ggplot(all_men_simulation, aes(x= reorder(Name, -prob), y= prob, fill=country)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity") + xlab("Male contestants") +
+  ylab("Probability of winning finals")
+
+
+## Comments
+# Interestingly enough, in this graph, the US does not trump all countries-
+# although we are working with more countries and players in this simulation
+# set. We matched the top 5 players from the other countries alongside a
+# potential team of US male players. In this case, China trumps above all with
+# Jingyuan Zou having a probability of above 75% in winning a medal. Unlike the
+# women's team, China's team is less variable and has a smoother descent in the
+# bars. The US is also one of the weakest teams in comparison with the top
+# countries here.
