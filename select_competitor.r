@@ -5,7 +5,7 @@ topn_countries <- function(data, gender, topn) {
     filter(!(Country == "USA"), !(Country == ""), Gender == gender) %>%
     distinct() %>%
     group_by(Country) %>%
-    summarise(probs = sum(prob), .groups = 'drop') %>% # Q: unfair.
+    summarise(probs = mean(prob), .groups = 'drop') %>% # Q: unfair.
     arrange(desc(probs)) %>%
     slice(1:topn) %>%
     select(Country)
