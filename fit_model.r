@@ -28,3 +28,10 @@ fit_full_logistic_model <- function(train) {
 
    return(model)
 }
+
+fit_full_linear_model <- function(train) {
+  model <- lm(Score ~ difficulty + mean_score + consistency + failure, data=train)
+  print(summary(model))
+
+  return(model)
+}

@@ -44,7 +44,7 @@ clean_championship_data <- function() {
     mutate(Apparatus = ifelse(Apparatus == "VT_2", "VT2", Apparatus)) %>%
     mutate(Apparatus = toupper(Apparatus)) %>%
     select(Name,Gender, Round, Apparatus, D_Score, E_Score,
-           Penalty, Score, Rank, Country)
+           Penalty, Score, Rank, Country, Competition)
 
   # Create a table that contains contry code for each gymnast
   country_lookup <- y %>%
