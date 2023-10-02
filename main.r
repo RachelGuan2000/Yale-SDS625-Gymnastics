@@ -26,12 +26,13 @@ score_aa_variables <- craft_score_variables(data, "AAfinal")
 table(score_variables$Country)
 
 model <- fit_full_linear_model(score_variables)
+olympic_difficulty <- mean(score_variables$difficulty)
+score_variables <- score_variables %>%
+    mutate(difficulty = olympic_difficulty)
 score_variables$pred = predict(model, newdata = score_variables, type='response')
-head(score_variables)
-
-aa_model <- fit_full_linear_model(score_aa_variables)
-score_aa_variables$pred = predict(aa_model, newdata=score_aa_variables, type='response')
-head(score_aa_variables)
+gymnast_predicts <- score_variables %>% select(Name, Apparatus, Gender, Country, pred) %>% unique()
+# NOTE For Kelly: this is the dataframe you want
+gymnast_predicts
 
 # Finding top 12 countries and the five athletes for each team
 top_countries_w <- topn_countries(data = score_variables,
@@ -44,7 +45,7 @@ top_countries_m <- topn_countries(data = score_variables,
 top_countries_m
 # Filtering out people from combo list
 
-#Initial pool from men and women for top 12 countries
+# Initial pool from men and women for top 12 countries
 mens <- score_variables %>%
   filter(Gender == 'm', Country %in% top_countries_m) %>%
   group_by(Country, Apparatus) %>%
@@ -57,45 +58,15 @@ womens <- score_variables %>%
   arrange(desc(pred)) %>%
   slice_head(n = 7)
 
-# Finding contenders for combos
-#top12 women
-contenders_w_USA <- contenders(data = score_variables, gender == 'w', country == "USA")
-contenders_w_CHN <- contenders(data = data, gender == 'w', country == "CHN")
-contenders_w_GBR <- contenders(data = data, gender == 'w', country == "GBR")
-contenders_w_ITA <- contenders(data = data, gender == 'w', country == "ITA")
-contenders_w_BRA <- contenders(data = data, gender == 'w', country == "BRA")
-contenders_w_FRA <- contenders(data = data, gender == 'w', country == "FRA")
-contenders_w_JPN <- contenders(data = data, gender == 'w', country == "JPN")
-contenders_w_BEL <- contenders(data = data, gender == 'w', country == "BEL")
-contenders_w_GER <- contenders(data = data, gender == 'w', country == "GER")
-contenders_w_NED <- contenders(data = data, gender == 'w', country == "NED")
-contenders_w_CAN <- contenders(data = data, gender == 'w', country == "CAN")
-contenders_w_AUS <- contenders(data = data, gender == 'w', country == "AUS")
-
-#top12 men
-contenders_m_USA <- contenders(data = data, gender == 'm', country == "USA")
-contenders_m_JPN <- contenders(data = data, gender == 'm', country == "JPN")
-contenders_m_GBR <- contenders(data = data, gender == 'm', country == "GBR")
-contenders_m_CHN <- contenders(data = data, gender == 'm', country == "CHN")
-contenders_m_ITA <- contenders(data = data, gender == 'm', country == "ITA")
-contenders_m_ENG <- contenders(data = data, gender == 'm', country == "ENG")
-contenders_m_SUI <- contenders(data = data, gender == 'm', country == "SUI")
-contenders_m_GER <- contenders(data = data, gender == 'm', country == "GER")
-contenders_m_TUR <- contenders(data = data, gender == 'm', country == "TUR")
-contenders_m_ESP <- contenders(data = data, gender == 'm', country == "ESP")
-contenders_m_UKR <- contenders(data = data, gender == 'm', country == "UKR")
-contenders_m_BRA <- contenders(data = data, gender == 'm', country == "BRA")
-
 contenders <- function(data, gender, country){
-  if(gender == 'w'){
+  if (gender == 'w'){
     people <- data %>%
       filter(Country == country, Name %in% womens$Name) %>%
       pivot_wider(names_from = Apparatus, values_from = pred) %>%
       replace(is.na(.), 0)
     return(people)
   }
-
-  if(gender == 'm'){
+  if (gender == 'm'){
     people <- data %>%
       filter(Country == country, Name %in% mens$Name) %>%
       pivot_wider(names_from = Apparatus, values_from = pred) %>%
@@ -103,26 +74,33 @@ contenders <- function(data, gender, country){
     return(people)
   }
 }
+# Finding contenders for combos
+#top12 women
 
+# women gymnasts in top12 countries: example
+contenders_w_CHN <- contenders(data = score_variables, gender = 'w', country = "DOM")
 
+# men gymnasts in top12 countries: example
+contenders_w_CHN <- contenders(data = score_variables, gender = 'm', country = "CHN")
+
+# five gymnasts that are participants for the 12 selected countries
 top5_w <- lapply(top_countries_w$Country, top5, gender = 'w')
 top5_w
 top5_m <- lapply(top_countries_m$Country, top5, gender = 'm')
 top5_m
 
-
-vaults = c("VT", "VT1", "VT2")
 # Finding the 36 individuals from countries that did not qualify
-individual_w <- top_individual(data = variables, gender = 'w',
+vaults = c("VT", "VT1", "VT2")
+individual_w <- top_individual(data = score_variables, gender = 'w',
                       country_list = top_countries_w, bucket = 4,
                       vaults = vaults)
 
-individual_m <- top_individual(data = variables, gender = 'm',
+individual_m <- top_individual(data = score_variables, gender = 'm',
                                country_list = top_countries_m, bucket = 6,
                                vaults = vaults)
 
-individual_w %>% select(Name, Apparatus, Gender, Country, prob)
-individual_m %>% select(Name, Apparatus, Gender, Country, prob)
+individual_w %>% select(Name, Apparatus, Gender, Country, pred)
+individual_m %>% select(Name, Apparatus, Gender, Country, pred)
 
 
 # All unique names check (should be 36)
@@ -134,15 +112,15 @@ sum(individual_w$Country %in% top_countries_w$Country)
 sum(individual_m$Country %in% top_countries_m$Country)
 
 
-
 # Selection process of the 5-person team.
-head(variables)
-head(aa_variables)
-candidates_w <- candidate_selection(variables, aa_variables, "w", 2, vaults)
+head(score_variables)
+head(score_aa_variables)
+candidates_w <- candidate_selection(score_variables, score_aa_variables, "w", 2, vaults)
 candidates_w
 
-candidates_m <- candidate_selection(variables, aa_variables, "m", 2, vaults)
+candidates_m <- candidate_selection(score_variables, score_aa_variables, "m", 2, vaults)
 candidates_m
+
 
 ########## GGPLOT
 

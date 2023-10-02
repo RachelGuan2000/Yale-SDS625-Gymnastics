@@ -15,7 +15,7 @@ topn_countries <- function(data, gender, topn) {
 
 # Function to find top 5 athletes for input countries
 top5 <- function(country, gender){
-  x <- variables %>%
+  x <- score_variables %>%
     filter(Country == country, Gender == gender) %>%
     arrange(desc(pred)) %>%
     distinct(Name, .keep_all = TRUE) %>%
@@ -52,23 +52,23 @@ candidate_selection <- function(data, aa_data, gender, ntop, vaults) {
     filter(Country == "USA", Gender == gender, !Apparatus %in% vaults) %>%
     distinct() %>%
     group_by(Apparatus) %>%
-    arrange(desc(prob)) %>%
+    arrange(desc(pred)) %>%
     slice(1:ntop) %>%
-    select(Name, Apparatus, y, prob)
+    select(Name, Apparatus, Score, pred)
 
   selection_v <- data %>%
     filter(Country == "USA", Gender == gender, Apparatus %in% vaults) %>%
     distinct(Name, .keep_all = TRUE) %>%
-    arrange(desc(prob)) %>%
+    arrange(desc(pred)) %>%
     slice(1:ntop) %>%
-    select(Name, Apparatus, y, prob)
+    select(Name, Apparatus, Score, pred)
 
   selection_aa <- aa_data %>%
     filter(Country == "USA", Gender == gender) %>%
     distinct(Name, .keep_all = TRUE) %>%
-    arrange(desc(prob)) %>%
+    arrange(desc(pred)) %>%
     slice(1:ntop) %>%
-    select(Name, Apparatus, y, prob)
+    select(Name, Apparatus, Score, pred)
 
   selection_aa$Apparatus <- "AA"
 
