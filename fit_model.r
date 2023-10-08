@@ -23,9 +23,8 @@ fit_logistic_model <- function(train) {
 
 # function to fit a full logistic regression model
 fit_full_logistic_model <- function(train) {
-   model <- glm(y ~ mean_score + consistency + mean_difficulty + failure, data = train, family=binomial())
+   model <- glm(y ~ mean_score + consistency + mean_difficulty + failure + difficulty, data = train, family=binomial())
    print(summary(model))
-
    return(model)
 }
 

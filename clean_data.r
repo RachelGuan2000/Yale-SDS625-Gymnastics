@@ -28,7 +28,6 @@ clean_championship_data <- function() {
   library(tidyverse)
   library(stringr)
 
-
   y <- read.csv("data/data_2022_2023.csv", as.is = TRUE)
   y <- y %>%
     distinct() %>%
@@ -63,7 +62,6 @@ clean_championship_data <- function() {
 
   # Gymnast with blank contry code
   no_name <- y %>% filter(Country == '')
-
 
   return(y)
 

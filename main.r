@@ -1,39 +1,52 @@
 # set the working directory
 setwd("/Users/guanrui/Desktop/S&DS625/Yale-SDS625-Gymnastics")
-
-# source the helper scripts
-source("clean_data.r")
-source("craft_variables.r")
-source("fit_model.r")
 source("select_competitor.r")
+library(tools)
 
-# clean the data for both Olympic and championship datasets
-# cleaned_olympic_data <- clean_olympic_data()
+############# DATA CLEANING #################
+source("clean_data.r")
+# Note: if you want to do the same thing for olympic dataset, try this function
+# data <- clean_olympic_data()
 
 data <- clean_championship_data()
-
-# preview the cleaned data
 head(data)
+# Note: we still have 26 entries that not have Country
 
-# craft variables for datasets
-# prob_variables <- craft_prob_variables(data)
-# prob_aa_variables <- craft_prob_aa_variables(data)
-# model <- fit_full_logistic_model(prob_variables)
+############# MODEL BUILDING (LOGISTIC) #######
+source("craft_variables.r")
+source("fit_model.r")
+prob_variables <- craft_prob_variables(data)
+# Note: only part of the gymnasts have ever taken part in the AAfinal competition
+# so this table does not contain every gymnast.
+prob_aa_variables <- craft_prob_aa_variables(data)
+# fit model
+logit_model <- fit_full_logistic_model(prob_variables)
+logit_aa_model <- fit_full_logistic_model(prob_aa_variables)
 
+############# MODEL BUILDING (LINEAR) ##########
+source("craft_variables.r")
+source("fit_model.r")
 score_variables <- craft_score_variables(data, "final")
 score_aa_variables <- craft_score_variables(data, "AAfinal")
+# Note: we have Round: aa, AAfinal, AAqual, final, qual, and TeamFinal
 
-table(score_variables$Country)
+# fit model
+linear_model <- fit_full_linear_model(score_variables)
+linear_aa_model <- fit_full_linear_model(score_aa_variables)
 
-model <- fit_full_linear_model(score_variables)
+############# PREDICTION #################
 olympic_difficulty <- mean(score_variables$difficulty)
-score_variables <- score_variables %>%
-    mutate(difficulty = olympic_difficulty)
-score_variables$pred = predict(model, newdata = score_variables, type='response')
-gymnast_predicts <- score_variables %>% select(Name, Apparatus, Gender, Country, pred) %>% unique()
-# NOTE For Kelly: this is the dataframe you want
-gymnast_predicts
+prob_variables <- prob_variables %>% mutate(difficulty = olympic_difficulty)
+prob_variables$pred = predict(logit_model, newdata = prob_variables, type='response')
+gymnast_prob_predicts <- prob_variables %>% select(Name, Apparatus, Gender, Country, pred) %>% unique()
+gymnast_prob_predicts
 
+score_variables <- score_variables %>% mutate(difficulty = olympic_difficulty)
+score_variables$pred = predict(linear_model, newdata = score_variables, type='response')
+gymnast_score_predicts <- score_variables %>% select(Name, Apparatus, Gender, Country, pred) %>% unique()
+gymnast_score_predicts
+
+############### SIMULATION FOR OTHER COUNTRIES #######
 # Finding top 12 countries and the five athletes for each team
 top_countries_w <- topn_countries(data = score_variables,
                                   gender = 'w',
@@ -122,7 +135,7 @@ candidates_m <- candidate_selection(score_variables, score_aa_variables, "m", 2,
 candidates_m
 
 
-########## GGPLOT
+########## DATA VISUALIZATION
 
 ## Top Counties Competitors:
 
