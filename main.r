@@ -46,6 +46,15 @@ score_variables$pred = predict(linear_model, newdata = score_variables, type='re
 gymnast_score_predicts <- score_variables %>% select(Name, Apparatus, Gender, Country, pred) %>% unique()
 gymnast_score_predicts
 
+############## TEST ###############
+filtered_gymnast_predicts <- gymnast_score_predicts %>%
+  filter(Country == "USA") %>%
+  group_by(Name) %>%
+  filter(n() > 1)
+
+filtered_gymnast_predicts
+# Note: not a problem any more!
+
 ############### SIMULATION FOR OTHER COUNTRIES #######
 # Finding top 12 countries and the five athletes for each team
 top_countries_w <- topn_countries(data = score_variables,
