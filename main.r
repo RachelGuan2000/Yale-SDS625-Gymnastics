@@ -2,6 +2,8 @@
 setwd("/Users/guanrui/Desktop/S&DS625/Yale-SDS625-Gymnastics")
 source("select_competitor.r")
 library(tools)
+library(dplyr)
+library(lubridate)
 
 ############# DATA CLEANING #################
 source("clean_data.r")
@@ -39,21 +41,116 @@ olympic_difficulty <- mean(score_variables$difficulty)
 prob_variables <- prob_variables %>% mutate(difficulty = olympic_difficulty)
 prob_variables$pred = predict(logit_model, newdata = prob_variables, type='response')
 gymnast_prob_predicts <- prob_variables %>% select(Name, Apparatus, Gender, Country, pred) %>% unique()
-gymnast_prob_predicts
 
 score_variables <- score_variables %>% mutate(difficulty = olympic_difficulty)
-score_variables$pred = predict(linear_model, newdata = score_variables, type='response')
+score_variables$pred <- predict(linear_model, newdata = score_variables, type='response')
+score_aa_variables$pred <- predict(linear_aa_model, newdata = score_variables, type='response')
 gymnast_score_predicts <- score_variables %>% select(Name, Apparatus, Gender, Country, pred) %>% unique()
-gymnast_score_predicts
+gymnast_score_predicts_aa <- score_aa_variables %>% select(Name, Apparatus, Gender, Country, pred) %>% unique()
+head(gymnast_score_predicts)
+head(gymnast_score_predicts_aa, 10)
 
-############## TEST ###############
-filtered_gymnast_predicts <- gymnast_score_predicts %>%
-  filter(Country == "USA") %>%
+############## FOR LOOP SIMULATION ###########
+vaults <- c("VT", "VT1", "VT2")
+
+# Prepare dataframes for women
+gymnast_predicts_w <- gymnast_score_predicts %>%
+  filter(Country == "USA" & Gender == "w") %>%
+  mutate(Apparatus = ifelse(Apparatus %in% vaults, "VT", Apparatus)) %>%
+  group_by(Name, Apparatus) %>%
+  mutate(pred = sprintf("%0.8f",mean(pred))) %>%
+  ungroup() %>%
+  unique()
+
+gymnast_predicts_w_aa <- gymnast_score_predicts_aa %>%
+  filter(Country == "USA" & Gender == "w") %>%
+  mutate(Apparatus = ifelse(Apparatus %in% vaults, "VT", Apparatus)) %>%
   group_by(Name) %>%
-  filter(n() > 1)
+  mutate(pred = sprintf("%0.8f",mean(pred))) %>%
+  ungroup() %>%
+  select(Name, Gender, Country, pred) %>%
+  mutate(Apparatus = "AA") %>%
+  unique()
 
-filtered_gymnast_predicts
-# Note: not a problem any more!
+# Prepare dataframes for men
+gymnast_preditcs_m <- gymnast_score_predicts %>%
+  filter(Country == "USA" & Gender == "m") %>%
+  mutate(Apparatus = ifelse(Apparatus %in% vaults, "VT", Apparatus)) %>%
+  group_by(Name, Apparatus) %>%
+  mutate(pred = sprintf("%0.8f",mean(pred))) %>%
+  ungroup() %>%
+  unique()
+
+gymnast_predicts_m_aa <- gymnast_score_predicts_aa %>%
+  filter(Country == "USA" & Gender == "m") %>%
+  mutate(Apparatus = ifelse(Apparatus %in% vaults, "VT", Apparatus)) %>%
+  group_by(Name) %>%
+  mutate(pred = sprintf("%0.8f",mean(pred))) %>%
+  ungroup() %>%
+  select(Name, Gender, Country, pred) %>%
+  mutate(Apparatus = "AA") %>%
+  unique()
+
+
+run_combination <- function(df_prediction, df_prediction_aa) {
+  # Create a list where each element contains all the gymnasts for a specific apparatus
+  apparatus_list <- list()
+  for (apparatus in unique(df_prediction$Apparatus)) {
+    gymnasts <- unique(df_prediction %>% filter(Apparatus == apparatus))
+    apparatus_list[[apparatus]] <- gymnasts
+  }
+  apparatus_list[["AA"]] <- df_prediction_aa
+
+  # Create a list that represents the index of the gymnast for each apparatus
+  index_list <- lapply(apparatus_list, function(df) {
+    return(1:nrow(df))
+  })
+
+  # Use expand.grid to get all combinations
+  combinations <- expand.grid(index_list)
+  all_combinations <- do.call(rbind, apply(combinations, 1, function(row_indices) {
+    # Extract rows based on the current combination of indices
+    rows <- mapply(function(df, idx) df[idx, ], apparatus_list, row_indices, SIMPLIFY = FALSE)
+
+    # Combine rows into one dataframe and return
+    combined_row <- do.call(cbind, rows)
+    return(combined_row)
+  }))
+
+  return(all_combinations)
+}
+
+table(gymnast_predicts_w$Apparatus) # BB FX UB VT
+table(gymnast_preditcs_m$Apparatus) # FX HB PB PH SR VT
+
+result_w <- run_combination(gymnast_predicts_w, gymnast_predicts_w_aa)
+result_w <- result_w %>%
+  select(BB.Name, BB.pred, FX.Name, FX.pred, UB.Name, UB.pred, VT.Name, VT.pred, AA.Name, AA.pred) %>%
+  mutate(BB = as.numeric(BB.pred)) %>%
+  mutate(FX = as.numeric(FX.pred)) %>%
+  mutate(UB = as.numeric(UB.pred)) %>%
+  mutate(VT = as.numeric(VT.pred)) %>%
+  mutate(AA = as.numeric(AA.pred)) %>%
+  select(BB.Name, BB, FX.Name, FX, UB.Name, UB, VT.Name, VT, AA.Name, AA) %>%
+  mutate(Total = BB + FX + UB + VT + AA) %>%
+  arrange(desc(Total))
+head(result_w)
+
+result_m <- run_combination(gymnast_preditcs_m, gymnast_predicts_m_aa)
+result_m <- result_m %>%
+  select(FX.Name, FX.pred, HB.Name, HB.pred, PB.Name, PB.pred, PH.Name, PH.pred, SR.pred, SR.Name, VT.Name, VT.pred, AA.Name, AA.pred) %>%
+  mutate(FX = as.numeric(FX.pred)) %>%
+  mutate(HB = as.numeric(HB.pred)) %>%
+  mutate(PB = as.numeric(PB.pred)) %>%
+  mutate(PH = as.numeric(PH.pred)) %>%
+  mutate(SR = as.numeric(SR.pred)) %>%
+  mutate(VT = as.numeric(VT.pred)) %>%
+  mutate(AA = as.numeric(AA.pred)) %>%
+  select(FX.Name, FX, HB.Name, HB, PB.Name, PB, PH.Name, PH, SR.Name, SR, VT.Name, VT, AA.Name, AA) %>%
+  mutate(Total = FX + HB + PB + PH + SR + VT) %>%
+  arrange(desc(Total))
+head(result_w)
+
 
 ############### SIMULATION FOR OTHER COUNTRIES #######
 # Finding top 12 countries and the five athletes for each team
