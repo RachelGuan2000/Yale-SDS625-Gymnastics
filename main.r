@@ -38,13 +38,20 @@ linear_aa_model <- fit_full_linear_model(score_aa_variables)
 
 ############# PREDICTION #################
 olympic_difficulty <- mean(score_variables$difficulty)
+
 prob_variables <- prob_variables %>% mutate(difficulty = olympic_difficulty)
-prob_variables$pred = predict(logit_model, newdata = prob_variables, type='response')
+prob_aa_variables <- prob_aa_variables %>% mutate(difficulty = olympic_difficulty)
+prob_variables$pred <- predict(logit_model, newdata = prob_variables, type='response')
+prob_aa_variables$pred <- predict(logit_aa_model, newdata = prob_aa_variables, type='response')
+gymnast_prob_predicts_aa <- prob_aa_variables %>% select(Name, Apparatus, Gender, Country, pred) %>% unique()
 gymnast_prob_predicts <- prob_variables %>% select(Name, Apparatus, Gender, Country, pred) %>% unique()
+head(gymnast_prob_predicts, 20)
+head(gymnast_prob_predicts_aa, 10)
 
 score_variables <- score_variables %>% mutate(difficulty = olympic_difficulty)
+score_aa_variables <- score_aa_variables %>% mutate(difficulty = olympic_difficulty)
 score_variables$pred <- predict(linear_model, newdata = score_variables, type='response')
-score_aa_variables$pred <- predict(linear_aa_model, newdata = score_variables, type='response')
+score_aa_variables$pred <- predict(linear_aa_model, newdata = score_aa_variables, type='response')
 gymnast_score_predicts <- score_variables %>% select(Name, Apparatus, Gender, Country, pred) %>% unique()
 gymnast_score_predicts_aa <- score_aa_variables %>% select(Name, Apparatus, Gender, Country, pred) %>% unique()
 head(gymnast_score_predicts)
@@ -52,8 +59,6 @@ head(gymnast_score_predicts_aa, 10)
 
 ############## FOR LOOP SIMULATION ###########
 vaults <- c("VT", "VT1", "VT2")
-
-# Prepare dataframes for women
 gymnast_predicts_w <- gymnast_score_predicts %>%
   filter(Country == "USA" & Gender == "w") %>%
   mutate(Apparatus = ifelse(Apparatus %in% vaults, "VT", Apparatus)) %>%
@@ -61,7 +66,13 @@ gymnast_predicts_w <- gymnast_score_predicts %>%
   mutate(pred = sprintf("%0.8f",mean(pred))) %>%
   ungroup() %>%
   unique()
-
+gymnast_probs_w <- gymnast_prob_predicts %>%
+  filter(Country == "USA" & Gender == "w") %>%
+  mutate(Apparatus = ifelse(Apparatus %in% vaults, "VT", Apparatus)) %>%
+  group_by(Name, Apparatus) %>%
+  mutate(pred = sprintf("%0.8f",mean(pred))) %>%
+  ungroup() %>%
+  unique()
 gymnast_predicts_w_aa <- gymnast_score_predicts_aa %>%
   filter(Country == "USA" & Gender == "w") %>%
   mutate(Apparatus = ifelse(Apparatus %in% vaults, "VT", Apparatus)) %>%
@@ -71,8 +82,22 @@ gymnast_predicts_w_aa <- gymnast_score_predicts_aa %>%
   select(Name, Gender, Country, pred) %>%
   mutate(Apparatus = "AA") %>%
   unique()
-
-# Prepare dataframes for men
+gymnast_probs_w_aa <- gymnast_prob_predicts_aa %>%
+  filter(Country == "USA" & Gender == "w") %>%
+  mutate(Apparatus = ifelse(Apparatus %in% vaults, "VT", Apparatus)) %>%
+  group_by(Name) %>%
+  mutate(pred = sprintf("%0.8f",mean(pred))) %>%
+  ungroup() %>%
+  select(Name, Gender, Country, pred) %>%
+  mutate(Apparatus = "AA") %>%
+  unique()
+gymnast_probs_m <- gymnast_prob_predicts %>%
+  filter(Country == "USA" & Gender == "m") %>%
+  mutate(Apparatus = ifelse(Apparatus %in% vaults, "VT", Apparatus)) %>%
+  group_by(Name, Apparatus) %>%
+  mutate(pred = sprintf("%0.8f",mean(pred))) %>%
+  ungroup() %>%
+  unique()
 gymnast_preditcs_m <- gymnast_score_predicts %>%
   filter(Country == "USA" & Gender == "m") %>%
   mutate(Apparatus = ifelse(Apparatus %in% vaults, "VT", Apparatus)) %>%
@@ -80,7 +105,6 @@ gymnast_preditcs_m <- gymnast_score_predicts %>%
   mutate(pred = sprintf("%0.8f",mean(pred))) %>%
   ungroup() %>%
   unique()
-
 gymnast_predicts_m_aa <- gymnast_score_predicts_aa %>%
   filter(Country == "USA" & Gender == "m") %>%
   mutate(Apparatus = ifelse(Apparatus %in% vaults, "VT", Apparatus)) %>%
@@ -90,7 +114,32 @@ gymnast_predicts_m_aa <- gymnast_score_predicts_aa %>%
   select(Name, Gender, Country, pred) %>%
   mutate(Apparatus = "AA") %>%
   unique()
+gymnast_probs_m_aa <- gymnast_prob_predicts_aa %>%
+  filter(Country == "USA" & Gender == "m") %>%
+  mutate(Apparatus = ifelse(Apparatus %in% vaults, "VT", Apparatus)) %>%
+  group_by(Name) %>%
+  mutate(pred = sprintf("%0.8f",mean(pred))) %>%
+  ungroup() %>%
+  select(Name, Gender, Country, pred) %>%
+  mutate(Apparatus = "AA") %>%
+  unique()
 
+# Probability dataframe for women
+gymnast_probs_w
+# Prediction dataframe for women
+gymnast_predicts_w
+# Probability dataframe for women all-around
+gymnast_probs_w_aa
+# Prediction dataframe for women all-around
+gymnast_predicts_w_aa
+# Probability dataframe for men
+gymnast_probs_m
+# Prediction dataframe for men
+gymnast_preditcs_m
+# Probability dataframe for men all-around
+gymnast_predicts_m_aa
+# Prediction dataframe for men all-around
+gymnast_probs_m_aa
 
 run_combination <- function(df_prediction, df_prediction_aa) {
   # Create a list where each element contains all the gymnasts for a specific apparatus
