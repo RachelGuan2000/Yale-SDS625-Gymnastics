@@ -174,9 +174,9 @@ run_combination <- function(df_prediction, df_prediction_aa) {
 table(gymnast_predicts_w$Apparatus) # BB FX UB VT
 table(gymnast_preditcs_m$Apparatus) # FX HB PB PH SR VT
 
-result_w <- run_combination(gymnast_predicts_w, gymnast_predicts_w_aa)
-result_w <- run_combination(gymnast_probs_w, gymnast_probs_w_aa)
-result_w <- result_w %>%
+result_pred_w <- run_combination(gymnast_predicts_w, gymnast_predicts_w_aa)
+result_prob_w <- run_combination(gymnast_probs_w, gymnast_probs_w_aa)
+result_pred_w <- result_pred_w %>%
   select(BB.Name, BB.pred, FX.Name, FX.pred, UB.Name, UB.pred, VT.Name, VT.pred, AA.Name, AA.pred) %>%
   mutate(BB = as.numeric(BB.pred)) %>%
   mutate(FX = as.numeric(FX.pred)) %>%
@@ -186,11 +186,23 @@ result_w <- result_w %>%
   select(BB.Name, BB, FX.Name, FX, UB.Name, UB, VT.Name, VT, AA.Name, AA) %>%
   mutate(Total = BB + FX + UB + VT + AA) %>%
   arrange(desc(Total))
-head(result_w)
+result_prob_w <- result_prob_w %>%
+  select(BB.Name, BB.pred, FX.Name, FX.pred, UB.Name, UB.pred, VT.Name, VT.pred, AA.Name, AA.pred) %>%
+  mutate(BB = as.numeric(BB.pred)) %>%
+  mutate(FX = as.numeric(FX.pred)) %>%
+  mutate(UB = as.numeric(UB.pred)) %>%
+  mutate(VT = as.numeric(VT.pred)) %>%
+  mutate(AA = as.numeric(AA.pred)) %>%
+  select(BB.Name, BB, FX.Name, FX, UB.Name, UB, VT.Name, VT, AA.Name, AA) %>%
+  mutate(Total = BB + FX + UB + VT + AA) %>%
+  arrange(desc(Total))
 
-result_m <- run_combination(gymnast_preditcs_m, gymnast_predicts_m_aa)
-result_m <- run_combination(gymnast_probs_m, gymnast_probs_m_aa)
-result_m <- result_m %>%
+head(result_preb_w)
+head(result_prob_w)
+
+result_pred_m <- run_combination(gymnast_preditcs_m, gymnast_predicts_m_aa)
+result_prob_m <- run_combination(gymnast_probs_m, gymnast_probs_m_aa)
+result_pred_m <- result_pred_m %>%
   select(FX.Name, FX.pred, HB.Name, HB.pred, PB.Name, PB.pred, PH.Name, PH.pred, SR.pred, SR.Name, VT.Name, VT.pred, AA.Name, AA.pred) %>%
   mutate(FX = as.numeric(FX.pred)) %>%
   mutate(HB = as.numeric(HB.pred)) %>%
@@ -202,8 +214,21 @@ result_m <- result_m %>%
   select(FX.Name, FX, HB.Name, HB, PB.Name, PB, PH.Name, PH, SR.Name, SR, VT.Name, VT, AA.Name, AA) %>%
   mutate(Total = FX + HB + PB + PH + SR + VT) %>%
   arrange(desc(Total))
-head(result_w)
+result_prob_m <- result_prob_m %>%
+  select(FX.Name, FX.pred, HB.Name, HB.pred, PB.Name, PB.pred, PH.Name, PH.pred, SR.pred, SR.Name, VT.Name, VT.pred, AA.Name, AA.pred) %>%
+  mutate(FX = as.numeric(FX.pred)) %>%
+  mutate(HB = as.numeric(HB.pred)) %>%
+  mutate(PB = as.numeric(PB.pred)) %>%
+  mutate(PH = as.numeric(PH.pred)) %>%
+  mutate(SR = as.numeric(SR.pred)) %>%
+  mutate(VT = as.numeric(VT.pred)) %>%
+  mutate(AA = as.numeric(AA.pred)) %>%
+  select(FX.Name, FX, HB.Name, HB, PB.Name, PB, PH.Name, PH, SR.Name, SR, VT.Name, VT, AA.Name, AA) %>%
+  mutate(Total = FX + HB + PB + PH + SR + VT) %>%
+  arrange(desc(Total))
 
+head(result_preb_w)
+head(result_prob_w)
 
 ############### SIMULATION FOR OTHER COUNTRIES #######
 # Finding top 12 countries and the five athletes for each team
@@ -256,10 +281,15 @@ contenders_w_CHN <- contenders(data = score_variables, gender = 'w', country = "
 contenders_w_CHN <- contenders(data = score_variables, gender = 'm', country = "CHN")
 
 # five gymnasts that are participants for the 12 selected countries
-top5_w <- lapply(top_countries_w$Country, top5, gender = 'w')
-top5_w
-top5_m <- lapply(top_countries_m$Country, top5, gender = 'm')
-top5_m
+top5_w_score <- lapply(top_countries_w$Country, top5_score, gender = 'w')
+top5_w_score
+top5_m_score <- lapply(top_countries_m$Country, top5_score, gender = 'm')
+top5_m_score
+
+top5_w_prob <- lapply(top_countries_w$Country, top5_prob, gender = 'w')
+top5_w_prob
+top5_m_prob <- lapply(top_countries_m$Country, top5_prob, gender = 'm')
+top5_m_prob
 
 # Finding the 36 individuals from countries that did not qualify
 vaults = c("VT", "VT1", "VT2")
@@ -294,7 +324,7 @@ candidates_m <- candidate_selection(score_variables, score_aa_variables, "m", 2,
 candidates_m
 
 
-########## DATA VISUALIZATION
+########## DATA VISUALIZATION ##########
 
 ## Top Counties Competitors:
 

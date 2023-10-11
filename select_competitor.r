@@ -14,15 +14,28 @@ topn_countries <- function(data, gender, topn) {
 
 
 # Function to find top 5 athletes for input countries
-top5 <- function(country, gender){
+top5_score <- function(country, gender){
   x <- score_variables %>%
     filter(Country == country, Gender == gender) %>%
     arrange(desc(pred)) %>%
     distinct(Name, .keep_all = TRUE) %>%
-    slice(1:5)
+    slice(1:5) %>%
+    select(Name, Apparatus, Gender, Country, pred)
 
   return (x)
 }
+
+top5_prob <- function(country, gender){
+  x <- prob_variables %>%
+    filter(Country == country, Gender == gender) %>%
+    arrange(desc(pred)) %>%
+    distinct(Name, .keep_all = TRUE) %>%
+    slice(1:5) %>%
+    select(Name, Apparatus, Gender, Country, pred)
+  return (x)
+}
+
+
 
 
 top_individual <- function(data, gender, country_list, bucket, vaults) {
