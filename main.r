@@ -57,7 +57,7 @@ gymnast_score_predicts_aa <- score_aa_variables %>% select(Name, Apparatus, Gend
 head(gymnast_score_predicts)
 head(gymnast_score_predicts_aa, 10)
 
-############## FOR LOOP SIMULATION ###########
+############## FINALIZE PROB & PRED DF ###########
 vaults <- c("VT", "VT1", "VT2")
 gymnast_predicts_w <- gymnast_score_predicts %>%
   filter(Country == "USA" & Gender == "w") %>%
@@ -141,18 +141,20 @@ gymnast_predicts_m_aa
 # Prediction dataframe for men all-around
 gymnast_probs_m_aa
 
+
+############## FOR LOOP -> COMBINATION ###########
 run_combination <- function(df_prediction, df_prediction_aa) {
   # Create a list where each element contains all the gymnasts for a specific apparatus
   apparatus_list <- list()
   for (apparatus in unique(df_prediction$Apparatus)) {
-    gymnasts <- unique(df_prediction %>% filter(Apparatus == apparatus))
+    gymnasts <- unique(df_prediction %>% filter(Apparatus == apparatus)) %>% arrange(desc(as.numeric(pred)))
     apparatus_list[[apparatus]] <- gymnasts
   }
   apparatus_list[["AA"]] <- df_prediction_aa
 
   # Create a list that represents the index of the gymnast for each apparatus
   index_list <- lapply(apparatus_list, function(df) {
-    return(1:nrow(df))
+    return(1 : pmin(nrow(df), 5))
   })
 
   # Use expand.grid to get all combinations
@@ -173,6 +175,7 @@ table(gymnast_predicts_w$Apparatus) # BB FX UB VT
 table(gymnast_preditcs_m$Apparatus) # FX HB PB PH SR VT
 
 result_w <- run_combination(gymnast_predicts_w, gymnast_predicts_w_aa)
+result_w <- run_combination(gymnast_probs_w, gymnast_probs_w_aa)
 result_w <- result_w %>%
   select(BB.Name, BB.pred, FX.Name, FX.pred, UB.Name, UB.pred, VT.Name, VT.pred, AA.Name, AA.pred) %>%
   mutate(BB = as.numeric(BB.pred)) %>%
@@ -186,6 +189,7 @@ result_w <- result_w %>%
 head(result_w)
 
 result_m <- run_combination(gymnast_preditcs_m, gymnast_predicts_m_aa)
+result_m <- run_combination(gymnast_probs_m, gymnast_probs_m_aa)
 result_m <- result_m %>%
   select(FX.Name, FX.pred, HB.Name, HB.pred, PB.Name, PB.pred, PH.Name, PH.pred, SR.pred, SR.Name, VT.Name, VT.pred, AA.Name, AA.pred) %>%
   mutate(FX = as.numeric(FX.pred)) %>%
