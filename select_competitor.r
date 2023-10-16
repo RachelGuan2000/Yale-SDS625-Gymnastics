@@ -5,7 +5,7 @@ topn_countries <- function(data, gender, topn) {
     filter(!(Country == "USA"), !(Country == ""), Gender == gender) %>%
     distinct() %>%
     group_by(Country) %>%
-    summarise(preds = mean(pred), .groups = 'drop') %>% # Q: unfair.
+    summarise(preds = mean(Score), .groups = 'drop') %>% # Q: unfair.
     arrange(desc(preds)) %>%
     slice(1:topn) %>%
     select(Country)
@@ -33,6 +33,16 @@ top5_prob <- function(country, gender){
     slice(1:5) %>%
     select(Name, Apparatus, Gender, Country, pred)
   return (x)
+}
+
+top5 <- function(data, country, gender) {
+  data %>%
+  filter(Country == country, Gender == gender) %>%
+  mutate(Apparatus = ifelse(Apparatus == "VT1", "VT", Apparatus)) %>%
+  mutate(Apparatus = ifelse(Apparatus == "VT2", "VT", Apparatus)) %>%
+  group_by(Apparatus) %>%
+  arrange(desc(pred), .by_group = TRUE) %>%
+  top_n(1, pred)
 }
 
 
