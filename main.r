@@ -262,129 +262,6 @@ for (i in 1 : length(country_codes_w)) {
 }
 country_tables_w
 
-# ########## DATA VISUALIZATION ##########
-
-# ## Top Counties Competitors:
-
-# # Men’s qual: china, Japan, Great Britain
-# # Women: US, Great Britain, Canada
-
-# #### Comparing the probabilities for women and men
-
-# ### Women
-
-# ## US women (original team of 5)
-USA_candidates_w_plot <- gymnast_probs_w %>% group_by(Name) %>%
-  summarise(predicted_score = mean(pred))
-
-ggplot(USA_candidates_w_plot, aes(x = reorder(Name, -predicted_score),
-                                  y = predicted_score)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  geom_bar(stat = "identity" , color='skyblue',fill='steelblue') +
-  xlab("Female contestants") + ylab("Predicted Score for USA women's team")
-
-
-## Recall:
-# ## Probability dataframe for women all-around
-gymnast_probs_w_aa
-USA_gymnast_probs_w_aa_plot <- gymnast_probs_w_aa %>% group_by(Name) %>%
-  select("Name", "pred") %>% rename("prob" = "pred") %>% #rename pred to prob
-  mutate(prob = as.numeric(prob))
-
-ggplot(USA_gymnast_probs_w_aa_plot, aes(x = reorder(Name, -prob), y = prob)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  geom_bar(stat = "identity" , color='blue',fill='skyblue') +
-  xlab("Female contestants") +
-  ylab("Probabilities for USA women's all arounds to win medals")
-
-# ## Prediction dataframe for women all-around
-gymnast_predicts_w_aa
-USA_gymnast_predicts_w_aa_plot <- gymnast_predicts_w_aa %>% group_by(Name) %>%
-  select("Name", "pred") %>%
-  mutate(pred = as.numeric(pred))
-
-ggplot(USA_gymnast_predicts_w_aa_plot, aes(x = reorder(Name, -pred), y = pred)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  geom_bar(stat = "identity" , color='blue',fill='skyblue') +
-  xlab("Female contestants") +
-  ylab("Predicted Scores for USA women's all arounds")
-
-
-#### Comments:
-## As we can see in both gymnast_probs_w_aa and gymnast_predicts_w_aa, Jade Carey
-## is included in the top selections as the AA gymnast. Additionally, she is also
-## included within the team of 5 for the USA olympics team as well.
-
-# ## US men
-USA_candidates_m_plot <- candidates_m %>% group_by(Name) %>%
-  summarise(prob = mean(pred))
-
-ggplot(USA_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  geom_bar(stat = "identity" , color='skyblue',fill='steelblue') +
-  xlab("Female contestants") + ylab("Predicted Score for USA women's team")
-
-
-
-## Recall:
-# ## Probability dataframe for men all-around
-gymnast_probs_m_aa
-USA_gymnast_probs_m_aa_plot <- gymnast_probs_m_aa %>% group_by(Name) %>%
-  select("Name", "pred") %>% rename("prob" = "pred") %>%
-  mutate(prob = as.numeric(prob))
-
-ggplot(USA_gymnast_probs_m_aa_plot, aes(reorder(Name, -prob), y = prob)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  geom_bar(stat = "identity" , color='blue',fill='skyblue') +
-  xlab("Male contestants") +
-  ylab("Probabilities for USA men's all arounds to win medals")
-
-# ## Prediction dataframe for men all-around
-gymnast_predicts_m_aa
-USA_gymnast_predicts_m_aa_plot <- gymnast_predicts_m_aa %>% group_by(Name) %>%
-  select("Name", "pred") %>%
-  mutate(pred = as.numeric(pred))
-
-ggplot(USA_gymnast_predicts_m_aa_plot, aes(x = reorder(Name, -pred), y = pred)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  geom_bar(stat = "identity" , color='blue',fill='skyblue') +
-  xlab("Male contestants") +
-  ylab("Predicted Scores for USA men's all arounds")
-
-
-
-
-# top_countries_w
-
-
-## Recall:
-# # Men’s qual: china, Japan, Great Britain
-# # Women: US, Great Britain, Canada
-
-ENG_top5_women <- top5(score_variables, "ENG", "w")
-CAN_top5_women <- top5(score_variables, "CAN", "w")
-
-ENG_candidates_w_plot <- ENG_top5_women %>% group_by(Name) %>%
-  summarise(pred = mean(pred))
-ggplot(ENG_candidates_w_plot, aes(x = reorder(Name, -pred), y = pred)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  geom_bar(stat = "identity" , color='dodgerblue4',fill='dodgerblue3') +
-  xlab("Female contestants") + ylab("ENG Women Total Score Average")
-
-CAN_candidates_w_plot <-  CAN_top5_women %>% group_by(Name) %>%
-  summarise(pred = mean(pred))
-ggplot(CAN_candidates_w_plot, aes(x = reorder(Name, -pred), y = pred)) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  geom_bar(stat = "identity" , color='burlywood',fill='red4') +
-  xlab("Female contestants") + ylab("CAN Women Total Score Average")
-
-# # Combine all together
-USA_candidates_w_plot$country <- "USA"
-ENG_candidates_w_plot$country <- "ENG"
-CAN_candidates_w_plot$country <- "CAN"
-
-all_women_simulation <- rbind(USA_candidates_w_plot, ENG_candidates_w_plot, CAN_candidates_w_plot)
-
 
 # ggplot(all_women_simulation, aes(x= reorder(Name, -prob), y= prob, fill=country)) +
 #   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
@@ -670,22 +547,18 @@ ui <- fluidPage(
     sidebarPanel(
       # Dropdown for choosing Male or Female team
       selectInput("team", "Select Team", choices = c("Male", "Female")),
-      br(),
 
       # Dropdown for choosing Score Prediction or Winning Probability
       selectInput("metric", "Select Metric", choices = c("Score Prediction", "Winning Probability")),
-      br(),
 
       # UI Output for the reactive checkbox group
       uiOutput("countryCheckboxes"),
-      hr()
     ),
 
     # Main panel
     mainPanel(
-        tableOutput("compareTable"),
-        # Output for displaying the selected team and metric
-        textOutput("selection_text")
+        tableOutput("resultsTable"),
+        tableOutput("compareTable")
     )
   )
 )
@@ -713,7 +586,7 @@ server <- function(input, output, session) {
 
   output$compareTable <- renderTable({
     df <- t(sapply(selected_countries(), unlist))
-    colnames(df) <- as.vector(input$compare_countries)
+    colnames(df) <- head(input$compare_countries, ncol(df))
     format(df, justify="left")
   })
 
