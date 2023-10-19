@@ -3,6 +3,7 @@ setwd("/Users/guanrui/Desktop/S&DS625/Yale-SDS625-Gymnastics")
 library(tools)
 library(dplyr)
 library(lubridate)
+library(shiny)
 
 ############# DATA CLEANING #################
 source("clean_data.r")
@@ -237,21 +238,220 @@ top_countries_w <- topn_countries(data = score_variables,
                                   gender = 'w',
                                   topn = 12)
 top_countries_w
+country_codes_w <- as.list(top_countries_w$Country)
 top_countries_m <- topn_countries(data = score_variables,
                                   gender = 'm',
                                   topn = 12)
 top_countries_m
+country_codes_m <- as.list(top_countries_m$Country)
 
 # Find top 5 gymnasts in each country
 top5_m <- lapply(top_countries_m$Country, top5, data = gymnast_score_predicts, gender ="m")
 
-top5_m_CHN <- top5_m[[1]]
-top5_m_CHN
-top5_m_IRI <- top5_m[[2]]
-top5_m_IRI
-top5_m_ARM <- top5_m[[3]]
-top5_m_ARM
-top5_m_PHI <- top5_m[[4]]
+country_tables_m <- setNames(replicate(length(country_codes_m), NULL, simplify = FALSE), country_codes_m)
+for (i in 1 : length(country_codes_m)) {
+    country_tables_m[country_codes_m[[i]]] <- top5_m[[i]]
+}
+country_tables_m
+
+top5_w <- lapply(top_countries_w$Country, top5, data = gymnast_score_predicts, gender ="w")
+
+country_tables_w <- setNames(replicate(length(country_codes_w), NULL, simplify = FALSE), country_codes_w)
+for (i in 1 : length(country_codes_w)) {
+    country_tables_w[country_codes_w[[i]]] <- top5_w[[i]]
+}
+country_tables_w
+
+# ########## DATA VISUALIZATION ##########
+
+# ## Top Counties Competitors:
+
+# # Men’s qual: china, Japan, Great Britain
+# # Women: US, Great Britain, Canada
+
+# #### Comparing the probabilities for women and men
+
+# ### Women
+
+# ## US women (original team of 5)
+USA_candidates_w_plot <- gymnast_probs_w %>% group_by(Name) %>%
+  summarise(predicted_score = mean(pred))
+
+ggplot(USA_candidates_w_plot, aes(x = reorder(Name, -predicted_score),
+                                  y = predicted_score)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='skyblue',fill='steelblue') +
+  xlab("Female contestants") + ylab("Predicted Score for USA women's team")
+
+
+## Recall:
+# ## Probability dataframe for women all-around
+gymnast_probs_w_aa
+USA_gymnast_probs_w_aa_plot <- gymnast_probs_w_aa %>% group_by(Name) %>%
+  select("Name", "pred") %>% rename("prob" = "pred") %>% #rename pred to prob
+  mutate(prob = as.numeric(prob))
+
+ggplot(USA_gymnast_probs_w_aa_plot, aes(x = reorder(Name, -prob), y = prob)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='blue',fill='skyblue') +
+  xlab("Female contestants") +
+  ylab("Probabilities for USA women's all arounds to win medals")
+
+# ## Prediction dataframe for women all-around
+gymnast_predicts_w_aa
+USA_gymnast_predicts_w_aa_plot <- gymnast_predicts_w_aa %>% group_by(Name) %>%
+  select("Name", "pred") %>%
+  mutate(pred = as.numeric(pred))
+
+ggplot(USA_gymnast_predicts_w_aa_plot, aes(x = reorder(Name, -pred), y = pred)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='blue',fill='skyblue') +
+  xlab("Female contestants") +
+  ylab("Predicted Scores for USA women's all arounds")
+
+
+#### Comments:
+## As we can see in both gymnast_probs_w_aa and gymnast_predicts_w_aa, Jade Carey
+## is included in the top selections as the AA gymnast. Additionally, she is also
+## included within the team of 5 for the USA olympics team as well.
+
+# ## US men
+USA_candidates_m_plot <- candidates_m %>% group_by(Name) %>%
+  summarise(prob = mean(pred))
+
+ggplot(USA_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='skyblue',fill='steelblue') +
+  xlab("Female contestants") + ylab("Predicted Score for USA women's team")
+
+
+
+## Recall:
+# ## Probability dataframe for men all-around
+gymnast_probs_m_aa
+USA_gymnast_probs_m_aa_plot <- gymnast_probs_m_aa %>% group_by(Name) %>%
+  select("Name", "pred") %>% rename("prob" = "pred") %>%
+  mutate(prob = as.numeric(prob))
+
+ggplot(USA_gymnast_probs_m_aa_plot, aes(reorder(Name, -prob), y = prob)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='blue',fill='skyblue') +
+  xlab("Male contestants") +
+  ylab("Probabilities for USA men's all arounds to win medals")
+
+# ## Prediction dataframe for men all-around
+gymnast_predicts_m_aa
+USA_gymnast_predicts_m_aa_plot <- gymnast_predicts_m_aa %>% group_by(Name) %>%
+  select("Name", "pred") %>%
+  mutate(pred = as.numeric(pred))
+
+ggplot(USA_gymnast_predicts_m_aa_plot, aes(x = reorder(Name, -pred), y = pred)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='blue',fill='skyblue') +
+  xlab("Male contestants") +
+  ylab("Predicted Scores for USA men's all arounds")
+
+
+
+
+# top_countries_w
+
+
+## Recall:
+# # Men’s qual: china, Japan, Great Britain
+# # Women: US, Great Britain, Canada
+
+ENG_top5_women <- top5(score_variables, "ENG", "w")
+CAN_top5_women <- top5(score_variables, "CAN", "w")
+
+ENG_candidates_w_plot <- ENG_top5_women %>% group_by(Name) %>%
+  summarise(pred = mean(pred))
+ggplot(ENG_candidates_w_plot, aes(x = reorder(Name, -pred), y = pred)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='dodgerblue4',fill='dodgerblue3') +
+  xlab("Female contestants") + ylab("ENG Women Total Score Average")
+
+CAN_candidates_w_plot <-  CAN_top5_women %>% group_by(Name) %>%
+  summarise(pred = mean(pred))
+ggplot(CAN_candidates_w_plot, aes(x = reorder(Name, -pred), y = pred)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  geom_bar(stat = "identity" , color='burlywood',fill='red4') +
+  xlab("Female contestants") + ylab("CAN Women Total Score Average")
+
+# # Combine all together
+USA_candidates_w_plot$country <- "USA"
+ENG_candidates_w_plot$country <- "ENG"
+CAN_candidates_w_plot$country <- "CAN"
+
+all_women_simulation <- rbind(USA_candidates_w_plot, ENG_candidates_w_plot, CAN_candidates_w_plot)
+
+
+# ggplot(all_women_simulation, aes(x= reorder(Name, -prob), y= prob, fill=country)) +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+#   geom_bar(stat = "identity") + xlab("Female contestants") +
+#   ylab("Probability of winning finals")
+
+
+# ## Comments
+# # It's very clear from the graph that the US has a higher variance in many
+# # of the players but they overall score higher than the other countries.
+# # In order from strongest to weakest of the top countries, we have: USA, ENG,
+# # and CAN. I'm wondering if Zoe Miller may be an outlier since having over 60%
+# # chance of winning and being higher than everyone else is very unlikely.
+
+# ### Men
+
+# CHN_top5_men <- top5("CHN", "m")
+# JPN_top5_men <- top5("JPN", "m")
+# ENG_top5_men <- top5("ENG", "m")
+
+# # Plotting the probabilities of top players in competitor country
+# ENG_candidates_m_plot <- ENG_top5_men %>% group_by(Name) %>%
+#   summarise(prob = mean(prob))
+# ggplot(ENG_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+#   geom_bar(stat = "identity" , color='dodgerblue4',fill='dodgerblue3') +
+#   xlab("Male contestants") + ylab("probability of winning finals")
+
+# JPN_candidates_m_plot <- JPN_top5_men %>% group_by(Name) %>%
+#   summarise(prob = mean(prob))
+# ggplot(JPN_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+#   geom_bar(stat = "identity" , color='darkred',fill='darkred') +
+#   xlab("Male contestants") + ylab("probability of winning finals")
+
+# CHN_candidates_m_plot <- CHN_top5_men %>% group_by(Name) %>%
+#   summarise(prob = mean(prob))
+# ggplot(CHN_candidates_m_plot, aes(x = reorder(Name, -prob), y = prob)) +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+#   geom_bar(stat = "identity" , color='red2',fill='red2') +
+#   xlab("Male contestants") + ylab("probability of winning finals")
+
+# # Combine all together
+# USA_candidates_m_plot$country <- "USA"
+# ENG_candidates_m_plot$country <- "ENG"
+# JPN_candidates_m_plot$country <- "JPN"
+# CHN_candidates_m_plot$country <- "CHN"
+
+# all_men_simulation <- rbind(USA_candidates_m_plot, ENG_candidates_m_plot,
+#                             JPN_candidates_m_plot, CHN_candidates_m_plot)
+
+
+# ggplot(all_men_simulation, aes(x= reorder(Name, -prob), y= prob, fill=country)) +
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+#   geom_bar(stat = "identity") + xlab("Male contestants") +
+#   ylab("Probability of winning finals")
+
+
+# ## Comments
+# # Interestingly enough, in this graph, the US does not trump all countries-
+# # although we are working with more countries and players in this simulation
+# # set. We matched the top 5 players from the other countries alongside a
+# # potential team of US male players. In this case, China trumps above all with
+# # Jingyuan Zou having a probability of above 75% in winning a medal. Unlike the
+# # women's team, China's team is less variable and has a smoother descent in the
+# # bars. The US is also one of the weakest teams in comparison with the top
+# # countries here.
 
 
 # # Initial pool from men and women for top 12 countries
@@ -460,3 +660,81 @@ top5_m_PHI <- top5_m[[4]]
 # # women's team, China's team is less variable and has a smoother descent in the
 # # bars. The US is also one of the weakest teams in comparison with the top
 # # countries here.
+
+ui <- fluidPage(
+  # Application title
+  titlePanel("Olympics Teams Performance Analysis"),
+
+  # Sidebar with dropdown menus
+  sidebarLayout(
+    sidebarPanel(
+      # Dropdown for choosing Male or Female team
+      selectInput("team", "Select Team", choices = c("Male", "Female")),
+      br(),
+
+      # Dropdown for choosing Score Prediction or Winning Probability
+      selectInput("metric", "Select Metric", choices = c("Score Prediction", "Winning Probability")),
+      br(),
+
+      # UI Output for the reactive checkbox group
+      uiOutput("countryCheckboxes"),
+      hr()
+    ),
+
+    # Main panel
+    mainPanel(
+        tableOutput("compareTable"),
+        # Output for displaying the selected team and metric
+        textOutput("selection_text")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  # Reactive UI for the checkboxes based on the team selection
+  output$countryCheckboxes <- renderUI({
+    if (input$team == "Male") {
+      checkboxGroupInput("compare_countries", "Compare with Countries", choices = country_codes_m)
+    } else if (input$team == "Female") {
+      checkboxGroupInput("compare_countries", "Compare with Countries", choices = country_codes_w)
+    } else {
+      return(NULL) # Return nothing if no team is selected
+    }
+  })
+
+
+  selected_countries <- reactive({
+    if (input$team == "Male") {
+      country_tables_m[names(country_tables_m) %in% input$compare_countries]
+      } else {
+        country_tables_w[names(country_tables_w) %in% input$compare_countries]
+      }
+  })
+
+  output$compareTable <- renderTable({
+    df <- t(sapply(selected_countries(), unlist))
+    colnames(df) <- as.vector(input$compare_countries)
+    format(df, justify="left")
+  })
+
+
+  # Render the result tables based on the selections
+  output$resultsTable <- renderTable({
+    if (input$team == "Female" && input$metric == "Score Prediction") {
+      return(head(result_pred_w))
+    } else if (input$team == "Male" && input$metric == "Score Prediction") {
+      return(head(result_pred_m))
+    } else if (input$team == "Female" && input$metric == "Winning Probability"){
+      return(head(result_prob_w))
+    } else {
+      return(head(result_prob_m))
+    }
+  })
+
+  # Create a reactive expression for displaying the selected team and metric
+  output$selection_text <- renderText({
+    paste("Selected Team:", input$team, "| Selected Metric:", input$metric, "| Compared Countries:", input$compare_countries) # paste(input$compare_countries, collapse = ", "))
+  })
+}
+
+shinyApp(ui, server)
